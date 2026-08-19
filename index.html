@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Mathematics Roadmap</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d12;
+      --panel: rgba(16, 22, 30, 0.92);
+      --panel-2: rgba(21, 29, 39, 0.96);
+      --panel-3: rgba(255,255,255,.035);
+      --border: rgba(255,255,255,.085);
+      --text: #eef3f8;
+      --muted: #91a1b2;
+      --blue: #4da3ff;
+      --red: #ff6f7c;
+      --purple: #b47cff;
+      --green: #4ade80;
+      --yellow: #f5c542;
+      --danger: #fb7185;
+      --shadow: 0 24px 80px rgba(0,0,0,.32);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(77,163,255,.10), transparent 28%),
+        radial-gradient(circle at 88% 10%, rgba(180,124,255,.09), transparent 25%),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body.modal-open { overflow: hidden; }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      width: min(1550px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 16px 0 60px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      padding: 15px 17px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(9,13,18,.80);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar-main {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.15rem, 2vw, 1.7rem);
+      letter-spacing: -.035em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: rgba(255,255,255,.055);
+      border-radius: 11px;
+      padding: 9px 12px;
+      transition: transform .15s ease, background .2s, border-color .2s, box-shadow .2s;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,.09);
+      transform: translateY(-1px);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn.primary {
+      background: linear-gradient(135deg, rgba(77,163,255,.22), rgba(180,124,255,.20));
+      border-color: rgba(120,171,255,.30);
+      box-shadow: 0 10px 30px rgba(77,163,255,.10);
+    }
+
+    .btn.primary:hover {
+      border-color: rgba(120,171,255,.55);
+      box-shadow: 0 10px 32px rgba(77,163,255,.16);
+    }
+
+    .btn.danger {
+      color: #ffb6c0;
+      border-color: rgba(251,113,133,.20);
+    }
+
+    .progress-wrap {
+      min-width: min(460px, 100%);
+      flex: 1;
+      max-width: 580px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: .77rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.07);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: inherit;
+      transition: width .4s ease;
+      box-shadow: 0 0 18px rgba(77,163,255,.28);
+    }
+
+    .layout {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: -.02em;
+    }
+
+    .panel-subtitle {
+      color: var(--muted);
+      font-size: .75rem;
+      margin-top: 3px;
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: .75rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .legend-dot.physics { background: var(--blue); }
+    .legend-dot.competition { background: var(--red); }
+    .legend-dot.both { background: var(--purple); }
+    .legend-dot.subject { background: #c9d2dc; }
+
+    #treeWrap {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,.016) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px),
+        radial-gradient(circle at 50% 35%, rgba(77,163,255,.05), transparent 50%);
+      background-size: 32px 32px;
+    }
+
+    #treeSvg {
+      display: block;
+      width: 100%;
+      min-height: 540px;
+      touch-action: none;
+    }
+
+    .tree-controls {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      display: flex;
+      gap: 6px;
+      z-index: 3;
+    }
+
+    .zoom-btn {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(12,17,23,.80);
+      color: #d7e0e9;
+      backdrop-filter: blur(8px);
+    }
+
+    .tree-help {
+      position: absolute;
+      left: 14px;
+      bottom: 12px;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      background: rgba(12,17,23,.72);
+      color: var(--muted);
+      font-size: .7rem;
+      pointer-events: none;
+    }
+
+    .tree-link {
+      fill: none;
+      stroke: rgba(190,204,219,.22);
+      stroke-width: 1.45px;
+    }
+
+    .prereq-link {
+      fill: none;
+      stroke: rgba(255,214,102,.58);
+      stroke-width: 1.7px;
+      stroke-dasharray: 6 5;
+      opacity: .78;
+      transition: opacity .2s, stroke .2s, stroke-width .2s;
+    }
+
+    .prereq-link.highlight {
+      stroke: #f8d46b;
+      stroke-width: 2.7px;
+      opacity: 1;
+    }
+
+    .tree-node {
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+
+    .tree-node.dimmed { opacity: .18; }
+
+    .tree-node circle.book {
+      stroke: rgba(255,255,255,.15);
+      stroke-width: 1.5;
+      transition: r .2s, stroke .2s, stroke-width .2s, filter .2s;
+    }
+
+    .tree-node:hover circle.book {
+      stroke: #fff;
+      stroke-width: 2.4;
+    }
+
+    .tree-node.focused circle.book {
+      stroke: #fff;
+      stroke-width: 3px;
+      filter: drop-shadow(0 0 7px rgba(255,255,255,.30));
+    }
+
+    .tree-node circle.status-ring {
+      fill: none;
+      stroke-width: 2.4;
+    }
+
+    .tree-label {
+      pointer-events: none;
+      user-select: none;
+      fill: #dbe5ef;
+      font-size: 10px;
+    }
+
+    .tree-subject-label {
+      pointer-events: none;
+      user-select: none;
+      fill: #d7e0e8;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tree-root-label {
+      pointer-events: none;
+      user-select: none;
+      fill: #fff;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .status-check {
+      pointer-events: none;
+      font-size: 11px;
+      font-weight: 800;
+      fill: #08110c;
+    }
+
+    .controls {
+      padding: 16px 18px;
+      display: grid;
+      gap: 15px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+    }
+
+    .search, .field-input, .field-select, .field-textarea {
+      width: 100%;
+      color: var(--text);
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    .search {
+      padding: 10px 12px;
+    }
+
+    .field-input, .field-select, .field-textarea {
+      padding: 10px 11px;
+    }
+
+    .field-textarea { min-height: 84px; resize: vertical; }
+
+    .search:focus, .field-input:focus, .field-select:focus, .field-textarea:focus {
+      border-color: rgba(77,163,255,.48);
+      box-shadow: 0 0 0 3px rgba(77,163,255,.09);
+      background: rgba(255,255,255,.06);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 11px;
+    }
+
+    .filter-group {
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-3);
+    }
+
+    .filter-group h3 {
+      margin: 0 0 7px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .7rem;
+    }
+
+    .checks {
+      display: flex;
+      gap: 8px 12px;
+      flex-wrap: wrap;
+    }
+
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .8rem;
+      color: #cdd7e1;
+      user-select: none;
+    }
+
+    .check input { accent-color: var(--blue); }
+
+    .focus-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 7px 9px;
+      border: 1px solid rgba(180,124,255,.24);
+      background: rgba(180,124,255,.08);
+      border-radius: 999px;
+      color: #d8c1ff;
+      font-size: .73rem;
+    }
+
+    .focus-chip button {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      min-width: 1170px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 13px;
+      border-bottom: 1px solid rgba(255,255,255,.055);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      color: var(--muted);
+      background: rgba(16,22,30,.96);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      backdrop-filter: blur(8px);
+    }
+
+    tbody tr {
+      transition: background .2s, opacity .2s, transform .18s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,.025); }
+    tbody tr.focus-row {
+      background: rgba(180,124,255,.075);
+      box-shadow: inset 3px 0 0 var(--purple);
+    }
+
+    tbody tr.flash { animation: rowFlash .72s ease; }
+
+    @keyframes rowFlash {
+      0% { background: rgba(77,163,255,.17); }
+      100% { background: transparent; }
+    }
+
+    .book-title {
+      font-weight: 680;
+      line-height: 1.25;
+    }
+
+    .author {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .meta-line {
+      margin-top: 5px;
+      color: #718297;
+      font-size: .69rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: .72rem;
+      border: 1px solid transparent;
+    }
+
+    .track-Physics { color: #a3d0ff; background: rgba(77,163,255,.11); border-color: rgba(77,163,255,.19); }
+    .track-Competition { color: #ffb0b8; background: rgba(255,111,124,.11); border-color: rgba(255,111,124,.19); }
+    .track-Both { color: #d1b2ff; background: rgba(180,124,255,.11); border-color: rgba(180,124,255,.19); }
+
+    .prereq-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      max-width: 300px;
+    }
+
+    .prereq-chip {
+      padding: 4px 7px;
+      border: 1px solid rgba(255,214,102,.14);
+      background: rgba(255,214,102,.05);
+      border-radius: 999px;
+      color: #e7d59c;
+      font-size: .67rem;
+    }
+
+    .status-select {
+      min-width: 135px;
+      padding: 8px 9px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.045);
+      color: var(--text);
+      border: 1px solid var(--border);
+      outline: none;
+    }
+
+    .status-select.completed {
+      border-color: rgba(74,222,128,.25);
+      box-shadow: 0 0 0 2px rgba(74,222,128,.05);
+    }
+
+    .status-select.progress {
+      border-color: rgba(245,197,66,.26);
+      box-shadow: 0 0 0 2px rgba(245,197,66,.05);
+    }
+
+    .notes {
+      width: 100%;
+      min-height: 72px;
+      resize: vertical;
+      padding: 8px 9px;
+      color: var(--text);
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 7px;
+    }
+
+    .order-btn {
+      width: 28px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: #aebccb;
+      background: rgba(255,255,255,.035);
+      font-size: .78rem;
+      line-height: 1;
+    }
+
+    .order-btn:hover:not(:disabled) {
+      color: #fff;
+      background: rgba(255,255,255,.08);
+    }
+
+    .order-btn:disabled {
+      opacity: .25;
+      cursor: default;
+    }
+
+    .unmet-warning {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: .68rem;
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    .mini-btn {
+      padding: 7px 8px;
+      font-size: .72rem;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      color: #d8e1ea;
+      background: rgba(255,255,255,.045);
+    }
+
+    .mini-btn.delete {
+      color: #ffb5bf;
+      border-color: rgba(251,113,133,.16);
+    }
+
+    .empty {
+      padding: 36px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      padding: 13px 18px 18px;
+      color: var(--muted);
+      font-size: .74rem;
+    }
+
+    .tooltip {
+      position: fixed;
+      z-index: 200;
+      max-width: 300px;
+      pointer-events: none;
+      opacity: 0;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      background: #151d27;
+      box-shadow: var(--shadow);
+      font-size: .76rem;
+      transition: opacity .12s ease;
+    }
+
+    /* ---------- MODAL ---------- */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(3,6,10,.72);
+      backdrop-filter: blur(9px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: min(88vh, 840px);
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel-2);
+      box-shadow: 0 40px 100px rgba(0,0,0,.48);
+      transform: translateY(12px) scale(.985);
+      transition: transform .2s ease;
+    }
+
+    .modal-backdrop.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 17px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .modal-header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .74rem;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #ccd7e3;
+      background: rgba(255,255,255,.045);
+    }
+
+    .modal-body {
+      padding: 18px;
+      display: grid;
+      gap: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      color: #cdd7e1;
+      font-size: .76rem;
+      font-weight: 600;
+    }
+
+    .field small {
+      color: var(--muted);
+      font-size: .68rem;
+      line-height: 1.35;
+    }
+
+    .prereq-select {
+      min-height: 150px;
+    }
+
+    .form-error {
+      display: none;
+      padding: 9px 10px;
+      border: 1px solid rgba(251,113,133,.20);
+      border-radius: 10px;
+      background: rgba(251,113,133,.07);
+      color: #ffbdc6;
+      font-size: .75rem;
+    }
+
+    .form-error.show { display: block; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 15px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 900px) {
+      .filter-grid { grid-template-columns: 1fr; }
+      .search-row { grid-template-columns: 1fr 1fr; }
+      .search-row .search { grid-column: 1 / -1; }
+      #treeSvg { min-height: 440px; }
+    }
+
+    @media (max-width: 650px) {
+      .app { width: min(100% - 14px, 1550px); padding-top: 7px; }
+      .topbar { top: 5px; }
+      .topbar-main { align-items: flex-start; }
+      .actions { width: 100%; }
+      .actions .btn { flex: 1; }
+      .search-row { grid-template-columns: 1fr; }
+      .search-row .search { grid-column: auto; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      #treeSvg { min-height: 380px; }
+      .tree-help { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-main">
+        <div class="brand">
+          <h1>Quantum Mathematics Roadmap</h1>
+          <p>Prerequisite-aware study tracker · Physics + Competition Mathematics</p>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-meta">
+            <span id="progressLabel">0% complete</span>
+            <span id="bookCountLabel">0 / 0 books</span>
+          </div>
+          <div class="progress-track">
+            <div id="masterProgress" class="progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="importBooksBtn" class="btn" type="button">⇩ Import List</button>
+          <button id="exportDataBtn" class="btn" type="button">⇧ Export JSON</button>
+          <button id="addBookBtn" class="btn primary" type="button">+ Add Book</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Progression Map</h2>
+            <div class="panel-subtitle">Subjects form the hierarchy; dashed arrows show explicit prerequisites.</div>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot physics"></span>Physics</span>
+            <span class="legend-item"><span class="legend-dot competition"></span>Competition</span>
+            <span class="legend-item"><span class="legend-dot both"></span>Both</span>
+            <span class="legend-item"><span class="legend-dot subject"></span>Subject</span>
+          </div>
+        </div>
+
+        <div id="treeWrap">
+          <svg id="treeSvg" aria-label="Interactive prerequisite tree"></svg>
+
+          <div class="tree-controls">
+            <button id="zoomInBtn" class="zoom-btn" type="button" title="Zoom in">+</button>
+            <button id="zoomOutBtn" class="zoom-btn" type="button" title="Zoom out">−</button>
+            <button id="zoomResetBtn" class="zoom-btn" type="button" title="Reset view">↺</button>
+          </div>
+
+          <div class="tree-help">Drag nodes · Scroll/pinch to zoom · Click a book to focus it below</div>
+        </div>
+      </section>
+
+      <section class="panel" id="library">
+        <div class="panel-header">
+          <div>
+            <h2>Book Library</h2>
+            <div class="panel-subtitle">Edit, delete, update status, and keep notes for every book.</div>
+          </div>
+          <div id="resultLabel" class="legend">Showing 0 books</div>
+        </div>
+
+        <div class="controls">
+          <div id="focusChip" class="focus-chip" hidden>
+            Focused book: <strong id="focusBookTitle"></strong>
+            <button id="clearFocusBtn" type="button" title="Clear book focus">×</button>
+          </div>
+
+          <div class="search-row">
+            <input id="searchInput" class="search" type="search" placeholder="Search by title, author, subject, or phase…" autocomplete="off" />
+            <button id="resetBtn" class="btn" type="button">Reset Filters</button>
+            <select id="sortSelect" class="field-select" style="width:190px">
+              <option value="order">Roadmap order</option>
+              <option value="title">Title A–Z</option>
+              <option value="author">Author A–Z</option>
+              <option value="subject">Subject A–Z</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+
+          <div class="filter-grid">
+            <div class="filter-group">
+              <h3>Track</h3>
+              <div id="trackFilters" class="checks"></div>
+            </div>
+
+            <div class="filter-group">
+              <h3>Status</h3>
+              <div id="statusFilters" class="checks"></div>
+            </div>
+
+            <div class="filter-group">
+              <h3>Phase</h3>
+              <div id="phaseFilters" class="checks"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Track</th>
+                <th>Phase / Subject</th>
+                <th>Prerequisites</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Order / Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookTable"></tbody>
+          </table>
+        </div>
+
+        <div id="emptyState" class="empty" hidden>No books match the current filters.</div>
+        <div class="footer-note">Everything is saved automatically to this browser's localStorage.</div>
+      </section>
+    </main>
+  </div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <!-- Add/Edit modal -->
+  <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">Add Book</h2>
+          <p id="modalSubtitle">Add a new book to your roadmap and connect its prerequisites.</p>
+        </div>
+        <button id="closeModalBtn" class="icon-btn" type="button" aria-label="Close modal">×</button>
+      </div>
+
+      <form id="bookForm">
+        <div class="modal-body">
+          <div id="formError" class="form-error"></div>
+
+          <div class="form-grid">
+            <div class="field full">
+              <label for="bookTitle">Title *</label>
+              <input id="bookTitle" class="field-input" type="text" required />
+            </div>
+
+            <div class="field">
+              <label for="bookAuthor">Author *</label>
+              <input id="bookAuthor" class="field-input" type="text" required />
+            </div>
+
+            <div class="field">
+              <label for="bookSubject">Subject *</label>
+              <input id="bookSubject" class="field-input" type="text" placeholder="Calculus, Linear Algebra, Combinatorics…" required />
+            </div>
+
+            <div class="field">
+              <label for="bookTrack">Track *</label>
+              <select id="bookTrack" class="field-select" required>
+                <option value="Physics">Physics</option>
+                <option value="Competition">Competition</option>
+                <option value="Both">Both</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="bookPhase">Phase *</label>
+              <input id="bookPhase" class="field-input" type="text" placeholder="Foundation, Core, Advanced…" required />
+            </div>
+
+            <div class="field">
+              <label for="bookStatus">Status *</label>
+              <select id="bookStatus" class="field-select" required>
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="bookPrerequisites">Prerequisites</label>
+              <select id="bookPrerequisites" class="field-select prereq-select" multiple size="7"></select>
+              <small>Hold Ctrl/Cmd to select multiple existing books. The selected books become explicit prerequisite arrows.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="cancelModalBtn" class="btn" type="button">Cancel</button>
+          <button id="saveBookBtn" class="btn primary" type="submit">Add Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Import books modal -->
+  <div id="importModalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="importModalTitle">Import Book List</h2>
+          <p>Paste one book per line using <strong>Book Name, Author</strong>. The line order becomes the roadmap order.</p>
+        </div>
+        <button id="closeImportModalBtn" class="icon-btn" type="button" aria-label="Close import modal">×</button>
+      </div>
+
+      <form id="importForm">
+        <div class="modal-body">
+          <div id="importError" class="form-error"></div>
+
+          <div class="field">
+            <label for="importText">Books *</label>
+            <textarea id="importText" class="field-textarea" style="min-height:260px"
+              placeholder="Spivak's Calculus, Michael Spivak
+Linear Algebra Done Right, Sheldon Axler
+Understanding Analysis, Stephen Abbott"></textarea>
+            <small>
+              Each non-empty line must contain a comma separating title and author.
+              Imported books are appended after the existing roadmap and receive the exact order of the pasted list.
+            </small>
+          </div>
+
+          <div class="field">
+            <label for="importMode">Import mode</label>
+            <select id="importMode" class="field-select">
+              <option value="append">Append to existing roadmap</option>
+              <option value="replace">Replace current roadmap</option>
+            </select>
+            <small>
+              Replace mode removes all current books before importing. Use it when the pasted list is your complete master sequence.
+            </small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="cancelImportBtn" class="btn" type="button">Cancel</button>
+          <button id="doImportBtn" class="btn primary" type="submit">Import Books</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ================================================================
+    // DEFAULT ROADMAP DATA
+    // ----------------------------------------------------------------
+    // THIS IS THE MAIN PLACE TO SWAP IN YOUR FULL ROADMAP LATER.
+    //
+    // Replace DEFAULT_BOOKS with your complete book array. Every book
+    // should contain:
+    // id, title, author, track, phase, subject, order, status,
+    // prerequisites (array of existing book IDs), custom (boolean),
+    // and note (string).
+    //
+    // Example:
+    // {
+    //   id: "my-book-1",
+    //   title: "A Great Book",
+    //   author: "Author Name",
+    //   track: "Physics",
+    //   phase: "Core",
+    //   subject: "Calculus",
+    //   order: 11,
+    //   status: "Not Started",
+    //   prerequisites: ["existing-book-id"],
+    //   custom: false,
+    //   note: ""
+    // }
+    //
+    // The app saves the entire current array in localStorage. Once a
+    // saved roadmap exists, it takes precedence over this default data.
+    // ================================================================
+
+    const DEFAULT_BOOKS = [
+      {
+        id: "calc-1",
+        title: "Calculus Vol. 1",
+        author: "Tom M. Apostol",
+        track: "Physics",
+        phase: "Foundation",
+        subject: "Calculus",
+        order: 1,
+        status: "Not Started",
+        prerequisites: [],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "calc-2",
+        title: "Calculus Vol. 2",
+        author: "Tom M. Apostol",
+        track: "Physics",
+        phase: "Foundation",
+        subject: "Calculus",
+        order: 2,
+        status: "Not Started",
+        prerequisites: ["calc-1"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "analysis",
+        title: "Understanding Analysis",
+        author: "Stephen Abbott",
+        track: "Physics",
+        phase: "Core",
+        subject: "Analysis",
+        order: 3,
+        status: "Not Started",
+        prerequisites: ["calc-2"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "linear",
+        title: "Linear Algebra Done Right",
+        author: "Sheldon Axler",
+        track: "Both",
+        phase: "Core",
+        subject: "Linear Algebra",
+        order: 4,
+        status: "Not Started",
+        prerequisites: ["calc-1"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "geometry",
+        title: "Introduction to Geometry",
+        author: "Richard Rusczyk & Mathew Crawford",
+        track: "Competition",
+        phase: "Foundation",
+        subject: "Geometry",
+        order: 5,
+        status: "Not Started",
+        prerequisites: [],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "combinatorics",
+        title: "A Walk Through Combinatorics",
+        author: "Miklós Bóna",
+        track: "Competition",
+        phase: "Core",
+        subject: "Combinatorics",
+        order: 6,
+        status: "Not Started",
+        prerequisites: ["geometry"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "probability",
+        title: "A First Course in Probability",
+        author: "Sheldon Ross",
+        track: "Both",
+        phase: "Core",
+        subject: "Probability",
+        order: 7,
+        status: "Not Started",
+        prerequisites: ["combinatorics"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "functional",
+        title: "A Course in Functional Analysis",
+        author: "John B. Conway",
+        track: "Physics",
+        phase: "Advanced",
+        subject: "Functional Analysis",
+        order: 8,
+        status: "Not Started",
+        prerequisites: ["analysis", "linear"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "quantum",
+        title: "Introduction to Quantum Mechanics",
+        author: "David J. Griffiths",
+        track: "Physics",
+        phase: "Advanced",
+        subject: "Quantum Mechanics",
+        order: 9,
+        status: "Not Started",
+        prerequisites: ["linear", "analysis", "functional"],
+        custom: false,
+        note: ""
+      },
+      {
+        id: "qinfo",
+        title: "Quantum Computation and Quantum Information",
+        author: "Michael Nielsen & Isaac Chuang",
+        track: "Both",
+        phase: "Advanced",
+        subject: "Quantum Information",
+        order: 10,
+        status: "Not Started",
+        prerequisites: ["quantum", "probability", "linear"],
+        custom: false,
+        note: ""
+      }
+    ];
+
+    const STORAGE_KEY = "quantum-math-roadmap-v2";
+    const STATUS_VALUES = ["Not Started", "In Progress", "Completed"];
+    const TRACK_VALUES = ["Physics", "Competition", "Both"];
+
+    let books = [];
+    let selectedTracks = new Set(TRACK_VALUES);
+    let selectedStatuses = new Set(STATUS_VALUES);
+    let selectedPhases = new Set();
+    let searchTerm = "";
+    let sortMode = "order";
+    let focusedBookId = null;
+    let editingBookId = null;
+
+    let treeSvg;
+    let treeViewport;
+    let treeZoom;
+    let treeZoomTransform = d3.zoomIdentity;
+
+    const els = {
+      progressBar: document.getElementById("masterProgress"),
+      progressLabel: document.getElementById("progressLabel"),
+      bookCountLabel: document.getElementById("bookCountLabel"),
+      trackFilters: document.getElementById("trackFilters"),
+      statusFilters: document.getElementById("statusFilters"),
+      phaseFilters: document.getElementById("phaseFilters"),
+      searchInput: document.getElementById("searchInput"),
+      sortSelect: document.getElementById("sortSelect"),
+      resetBtn: document.getElementById("resetBtn"),
+      resultLabel: document.getElementById("resultLabel"),
+      bookTable: document.getElementById("bookTable"),
+      emptyState: document.getElementById("emptyState"),
+      focusChip: document.getElementById("focusChip"),
+      focusBookTitle: document.getElementById("focusBookTitle"),
+      clearFocusBtn: document.getElementById("clearFocusBtn"),
+      tooltip: document.getElementById("tooltip"),
+      modalBackdrop: document.getElementById("modalBackdrop"),
+      modalTitle: document.getElementById("modalTitle"),
+      modalSubtitle: document.getElementById("modalSubtitle"),
+      closeModalBtn: document.getElementById("closeModalBtn"),
+      cancelModalBtn: document.getElementById("cancelModalBtn"),
+      bookForm: document.getElementById("bookForm"),
+      formError: document.getElementById("formError"),
+      bookTitle: document.getElementById("bookTitle"),
+      bookAuthor: document.getElementById("bookAuthor"),
+      bookSubject: document.getElementById("bookSubject"),
+      bookTrack: document.getElementById("bookTrack"),
+      bookPhase: document.getElementById("bookPhase"),
+      bookStatus: document.getElementById("bookStatus"),
+      bookPrerequisites: document.getElementById("bookPrerequisites"),
+      saveBookBtn: document.getElementById("saveBookBtn"),
+      importModalBackdrop: document.getElementById("importModalBackdrop"),
+      importModalTitle: document.getElementById("importModalTitle"),
+      closeImportModalBtn: document.getElementById("closeImportModalBtn"),
+      cancelImportBtn: document.getElementById("cancelImportBtn"),
+      importForm: document.getElementById("importForm"),
+      importText: document.getElementById("importText"),
+      importMode: document.getElementById("importMode"),
+      importError: document.getElementById("importError")
+    };
+
+    function cloneDefaults() {
+      return DEFAULT_BOOKS.map(book => ({
+        ...book,
+        prerequisites: [...(book.prerequisites || [])],
+        note: book.note || ""
+      }));
+    }
+
+    function normalizeBook(book, index) {
+      return {
+        id: String(book.id || `book-${Date.now()}-${index}`),
+        title: String(book.title || "Untitled"),
+        author: String(book.author || "Unknown"),
+        track: TRACK_VALUES.includes(book.track) ? book.track : "Both",
+        phase: String(book.phase || "Unsorted"),
+        subject: String(book.subject || "Unsorted"),
+        order: Number.isFinite(Number(book.order)) ? Number(book.order) : index + 1,
+        status: STATUS_VALUES.includes(book.status) ? book.status : "Not Started",
+        prerequisites: Array.isArray(book.prerequisites) ? [...new Set(book.prerequisites.map(String))] : [],
+        custom: Boolean(book.custom),
+        note: typeof book.note === "string" ? book.note : ""
+      };
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+
+        if (Array.isArray(saved)) {
+          books = saved.map(normalizeBook);
+        } else if (saved && Array.isArray(saved.books)) {
+          books = saved.books.map(normalizeBook);
+        } else {
+          books = cloneDefaults();
+        }
+      } catch (error) {
+        console.warn("Could not load saved roadmap state:", error);
+        books = cloneDefaults();
+      }
+
+      // Remove prerequisite IDs that no longer exist.
+      const validIds = new Set(books.map(book => book.id));
+      books.forEach(book => {
+        book.prerequisites = book.prerequisites.filter(id => validIds.has(id) && id !== book.id);
+      });
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+    }
+
+    function nextOrder() {
+      return books.reduce((max, book) => Math.max(max, Number(book.order) || 0), 0) + 1;
+    }
+
+    function uniqueId() {
+      let id = `book-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      while (books.some(book => book.id === id)) {
+        id = `book-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      }
+      return id;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function trackColor(track) {
+      if (track === "Physics") return "#4da3ff";
+      if (track === "Competition") return "#ff6f7c";
+      return "#b47cff";
+    }
+
+    function statusStroke(status) {
+      if (status === "Completed") return "#4ade80";
+      if (status === "In Progress") return "#f5c542";
+      return "transparent";
+    }
+
+    function updateProgress() {
+      const completed = books.filter(book => book.status === "Completed").length;
+      const percent = books.length ? Math.round((completed / books.length) * 100) : 0;
+
+      els.progressBar.style.width = `${percent}%`;
+      els.progressLabel.textContent = `${percent}% complete`;
+      els.bookCountLabel.textContent = `${completed} / ${books.length} books`;
+    }
+
+    function makeChecks(container, values, selectedSet, onChange) {
+      container.innerHTML = "";
+
+      values.forEach(value => {
+        const label = document.createElement("label");
+        label.className = "check";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = selectedSet.has(value);
+
+        input.addEventListener("change", () => {
+          input.checked ? selectedSet.add(value) : selectedSet.delete(value);
+          onChange();
+        });
+
+        label.append(input, document.createTextNode(value));
+        container.appendChild(label);
+      });
+    }
+
+    function refreshPhaseFilters() {
+      const phases = [...new Set(books.map(book => book.phase))].sort((a, b) => a.localeCompare(b));
+
+      if (selectedPhases.size === 0) {
+        phases.forEach(phase => selectedPhases.add(phase));
+      } else {
+        selectedPhases = new Set([...selectedPhases].filter(phase => phases.includes(phase)));
+        phases.forEach(phase => selectedPhases.add(phase));
+      }
+
+      makeChecks(els.trackFilters, TRACK_VALUES, selectedTracks, renderBooks);
+      makeChecks(els.statusFilters, STATUS_VALUES, selectedStatuses, renderBooks);
+      makeChecks(els.phaseFilters, phases, selectedPhases, renderBooks);
+    }
+
+    function filteredBooks() {
+      const q = searchTerm.trim().toLowerCase();
+
+      let list = books.filter(book => {
+        const matchesSearch =
+          !q ||
+          book.title.toLowerCase().includes(q) ||
+          book.author.toLowerCase().includes(q) ||
+          book.subject.toLowerCase().includes(q) ||
+          book.phase.toLowerCase().includes(q);
+
+        const matchesFocus = !focusedBookId || book.id === focusedBookId;
+        const matchesTrack = selectedTracks.has(book.track);
+        const matchesStatus = selectedStatuses.has(book.status);
+        const matchesPhase = selectedPhases.has(book.phase);
+
+        return matchesSearch && matchesFocus && matchesTrack && matchesStatus && matchesPhase;
+      });
+
+      return list.sort((a, b) => {
+        if (sortMode === "title") return a.title.localeCompare(b.title);
+        if (sortMode === "author") return a.author.localeCompare(b.author);
+        if (sortMode === "subject") return a.subject.localeCompare(b.subject) || a.order - b.order;
+        if (sortMode === "status") {
+          return STATUS_VALUES.indexOf(a.status) - STATUS_VALUES.indexOf(b.status) || a.order - b.order;
+        }
+        return a.order - b.order;
+      });
+    }
+
+    function prerequisiteChips(book) {
+      if (!book.prerequisites.length) return '<span style="color:#657487;font-size:.72rem">None</span>';
+
+      return `<div class="prereq-list">${
+        book.prerequisites
+          .map(id => books.find(b => b.id === id))
+          .filter(Boolean)
+          .map(pr => `<span class="prereq-chip" title="${escapeHtml(pr.author)}">${escapeHtml(pr.title)}</span>`)
+          .join("")
+      }</div>`;
+    }
+
+    function renderBooks() {
+      const list = filteredBooks();
+
+      els.bookTable.innerHTML = "";
+      els.resultLabel.textContent = `Showing ${list.length} book${list.length === 1 ? "" : "s"}`;
+      els.emptyState.hidden = list.length !== 0;
+
+      if (focusedBookId) {
+        const book = books.find(b => b.id === focusedBookId);
+        els.focusChip.hidden = !book;
+        if (book) els.focusBookTitle.textContent = book.title;
+      } else {
+        els.focusChip.hidden = true;
+      }
+
+      list.forEach(book => {
+        const tr = document.createElement("tr");
+        tr.dataset.id = book.id;
+        if (focusedBookId === book.id) tr.classList.add("focus-row");
+
+        const tdBook = document.createElement("td");
+        tdBook.innerHTML = `
+          <div class="book-title">${escapeHtml(book.title)}</div>
+          <div class="author">${escapeHtml(book.author)}</div>
+          <div class="meta-line">Order ${book.order}${book.custom ? " · Custom" : ""}</div>
+        `;
+
+        const tdTrack = document.createElement("td");
+        tdTrack.innerHTML = `<span class="pill track-${escapeHtml(book.track)}">${escapeHtml(book.track)}</span>`;
+
+        const tdPhase = document.createElement("td");
+        tdPhase.innerHTML = `
+          <div class="pill" style="border-color:rgba(255,255,255,.08);color:#cbd6e0;background:rgba(255,255,255,.035)">${escapeHtml(book.phase)}</div>
+          <div class="meta-line">${escapeHtml(book.subject)}</div>
+        `;
+
+        const tdPrereq = document.createElement("td");
+        tdPrereq.innerHTML = prerequisiteChips(book);
+
+        const tdStatus = document.createElement("td");
+        const select = document.createElement("select");
+        select.className = `status-select ${book.status === "Completed" ? "completed" : book.status === "In Progress" ? "progress" : ""}`;
+
+        STATUS_VALUES.forEach(status => {
+          const option = document.createElement("option");
+          option.value = status;
+          option.textContent = status;
+          option.selected = status === book.status;
+          select.appendChild(option);
+        });
+
+        select.addEventListener("change", () => {
+          book.status = select.value;
+          saveState();
+          updateProgress();
+          renderTree();
+          select.className = `status-select ${book.status === "Completed" ? "completed" : book.status === "In Progress" ? "progress" : ""}`;
+          tr.classList.remove("flash");
+          void tr.offsetWidth;
+          tr.classList.add("flash");
+          renderBooks();
+        });
+
+        tdStatus.appendChild(select);
+
+        // Check for unmet prerequisites
+        if (book.status !== "Not Started" && book.prerequisites && book.prerequisites.length > 0) {
+          const unmet = book.prerequisites.filter(prId => {
+            const pr = books.find(b => b.id === prId);
+            return !pr || pr.status !== "Completed";
+          });
+          if (unmet.length > 0) {
+            const warn = document.createElement("div");
+            warn.className = "unmet-warning";
+            warn.title = "Some prerequisites are not completed yet";
+            warn.textContent = "⚠️ Unmet prerequisites";
+            tdStatus.appendChild(warn);
+          }
+        }
+
+        const tdNotes = document.createElement("td");
+        const textarea = document.createElement("textarea");
+        textarea.className = "notes";
+        textarea.placeholder = "Notes, insights, difficult sections…";
+        textarea.value = book.note || "";
+
+        let timer;
+        textarea.addEventListener("input", () => {
+          book.note = textarea.value;
+          clearTimeout(timer);
+          timer = setTimeout(saveState, 250);
+        });
+
+        tdNotes.appendChild(textarea);
+
+        const tdActions = document.createElement("td");
+
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "mini-btn";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => openModal("edit", book.id));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "mini-btn delete";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => deleteBook(book.id));
+
+        actions.append(editBtn, deleteBtn);
+
+        const orderActions = document.createElement("div");
+        orderActions.className = "order-actions";
+
+        const upBtn = document.createElement("button");
+        upBtn.type = "button";
+        upBtn.className = "order-btn";
+        upBtn.title = "Move up";
+        upBtn.textContent = "↑";
+        upBtn.disabled = book.id === roadmapOrderedBooks()[0]?.id;
+        upBtn.addEventListener("click", () => moveBook(book.id, -1));
+
+        const downBtn = document.createElement("button");
+        downBtn.type = "button";
+        downBtn.className = "order-btn";
+        downBtn.title = "Move down";
+        downBtn.textContent = "↓";
+        const ordered = roadmapOrderedBooks();
+        downBtn.disabled = book.id === ordered[ordered.length - 1]?.id;
+        downBtn.addEventListener("click", () => moveBook(book.id, 1));
+
+        orderActions.append(upBtn, downBtn);
+        tdActions.append(actions, orderActions);
+
+        tr.append(tdBook, tdTrack, tdPhase, tdPrereq, tdStatus, tdNotes, tdActions);
+        els.bookTable.appendChild(tr);
+      });
+
+      updateProgress();
+      updateTreeFocusStyles();
+    }
+
+
+    function roadmapOrderedBooks() {
+      return [...books].sort((a, b) => a.order - b.order);
+    }
+
+    function normalizeOrderValues() {
+      roadmapOrderedBooks().forEach((book, index) => {
+        book.order = index + 1;
+      });
+    }
+
+    function moveBook(bookId, direction) {
+      const ordered = roadmapOrderedBooks();
+      const index = ordered.findIndex(book => book.id === bookId);
+
+      if (index < 0) return;
+
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= ordered.length) return;
+
+      const current = ordered[index];
+      const target = ordered[newIndex];
+
+      const tmp = current.order;
+      current.order = target.order;
+      target.order = tmp;
+
+      normalizeOrderValues();
+      saveState();
+      renderBooks();
+      renderTree();
+
+      const row = document.querySelector(`tr[data-id="${CSS.escape(bookId)}"]`);
+      if (row) {
+        row.classList.remove("flash");
+        void row.offsetWidth;
+        row.classList.add("flash");
+      }
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(books, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `quantum_math_roadmap_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function resetFilters() {
+      searchTerm = "";
+      focusedBookId = null;
+      els.searchInput.value = "";
+      sortMode = "order";
+      els.sortSelect.value = "order";
+      selectedTracks = new Set(TRACK_VALUES);
+      selectedStatuses = new Set(STATUS_VALUES);
+      selectedPhases = new Set([...new Set(books.map(book => book.phase))]);
+      refreshPhaseFilters();
+      renderBooks();
+      renderTree();
+    }
+
+    function clearFocus() {
+      focusedBookId = null;
+      renderBooks();
+      updateTreeFocusStyles();
+    }
+
+    function scrollToBookRow(id) {
+      const row = document.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+      if (!row) return;
+
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+      row.classList.remove("flash");
+      void row.offsetWidth;
+      row.classList.add("flash");
+    }
+
+    function focusBook(id) {
+      const book = books.find(b => b.id === id);
+      if (!book) return;
+
+      focusedBookId = id;
+      selectedTracks.add(book.track);
+      selectedStatuses.add(book.status);
+      selectedPhases.add(book.phase);
+
+      // Search is intentionally cleared so clicking the tree always yields a clean
+      // single-book result rather than stacking the existing search query.
+      searchTerm = "";
+      els.searchInput.value = "";
+
+      refreshPhaseFilters();
+      renderBooks();
+      scrollToBookRow(id);
+      updateTreeFocusStyles();
+    }
+
+
+    function openImportModal() {
+      els.importText.value = "";
+      els.importMode.value = "append";
+      els.importError.textContent = "";
+      els.importError.classList.remove("show");
+      els.importModalBackdrop.classList.add("open");
+      els.importModalBackdrop.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      setTimeout(() => els.importText.focus(), 30);
+    }
+
+    function closeImportModal() {
+      els.importModalBackdrop.classList.remove("open");
+      els.importModalBackdrop.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    }
+
+    function parseImportedBooks(rawText) {
+      const lines = rawText
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      if (!lines.length) {
+        throw new Error("Paste at least one book.");
+      }
+
+      const parsed = [];
+      const seenTitles = new Set();
+
+      lines.forEach((line, index) => {
+        const commaIndex = line.lastIndexOf(",");
+        if (commaIndex <= 0 || commaIndex === line.length - 1) {
+          throw new Error(`Line ${index + 1} must use the format: Book Name, Author`);
+        }
+
+        const title = line.slice(0, commaIndex).trim();
+        const author = line.slice(commaIndex + 1).trim();
+
+        if (!title || !author) {
+          throw new Error(`Line ${index + 1} is missing a book title or author.`);
+        }
+
+        const normalizedTitle = title.toLowerCase();
+        if (seenTitles.has(normalizedTitle)) {
+          throw new Error(`Line ${index + 1} duplicates "${title}" inside the import.`);
+        }
+        seenTitles.add(normalizedTitle);
+
+        parsed.push({ title, author });
+      });
+
+      return parsed;
+    }
+
+    function importBookList(rawText, mode) {
+      const imported = parseImportedBooks(rawText);
+
+      if (mode === "replace") {
+        books = [];
+      }
+
+      // Existing titles are skipped in append mode so the import cannot
+      // accidentally create two roadmap entries for the same book.
+      const existingTitles = new Set(books.map(book => book.title.trim().toLowerCase()));
+      const startOrder = books.length + 1;
+
+      let added = 0;
+
+      imported.forEach((item, index) => {
+        const normalizedTitle = item.title.toLowerCase();
+
+        if (mode === "append" && existingTitles.has(normalizedTitle)) {
+          return;
+        }
+
+        books.push({
+          id: uniqueId(),
+          title: item.title,
+          author: item.author,
+          track: "Both",
+          phase: "Imported",
+          subject: "Imported",
+          order: startOrder + added,
+          status: "Not Started",
+          prerequisites: [],
+          custom: true,
+          note: ""
+        });
+
+        existingTitles.add(normalizedTitle);
+        added++;
+      });
+
+      normalizeOrderValues();
+      saveState();
+
+      selectedTracks = new Set(TRACK_VALUES);
+      selectedStatuses = new Set(STATUS_VALUES);
+      selectedPhases = new Set([...new Set(books.map(book => book.phase))]);
+      searchTerm = "";
+      focusedBookId = null;
+      els.searchInput.value = "";
+      els.sortSelect.value = "order";
+      sortMode = "order";
+
+      refreshPhaseFilters();
+      renderBooks();
+      renderTree();
+      closeImportModal();
+
+      // Brief confirmation without using an intrusive alert.
+      els.resultLabel.textContent = `${added} book${added === 1 ? "" : "s"} imported`;
+      setTimeout(() => {
+        els.resultLabel.textContent = `Showing ${filteredBooks().length} books`;
+      }, 1800);
+    }
+
+    function openModal(mode, id = null) {
+      editingBookId = mode === "edit" ? id : null;
+
+      els.modalTitle.textContent = mode === "edit" ? "Edit Book" : "Add Book";
+      els.modalSubtitle.textContent = mode === "edit"
+        ? "Update the book metadata or change its prerequisite links."
+        : "Add a new book to your roadmap and connect its prerequisites.";
+      els.saveBookBtn.textContent = mode === "edit" ? "Save Changes" : "Add Book";
+      els.formError.classList.remove("show");
+      els.formError.textContent = "";
+
+      const book = id ? books.find(b => b.id === id) : null;
+
+      els.bookTitle.value = book?.title || "";
+      els.bookAuthor.value = book?.author || "";
+      els.bookSubject.value = book?.subject || "";
+      els.bookTrack.value = book?.track || "Physics";
+      els.bookPhase.value = book?.phase || "";
+      els.bookStatus.value = book?.status || "Not Started";
+
+      populatePrerequisiteOptions(book?.id || null, book?.prerequisites || []);
+
+      els.modalBackdrop.classList.add("open");
+      els.modalBackdrop.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      setTimeout(() => els.bookTitle.focus(), 30);
+    }
+
+    function closeModal() {
+      els.modalBackdrop.classList.remove("open");
+      els.modalBackdrop.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      editingBookId = null;
+    }
+
+    function populatePrerequisiteOptions(currentId = null, selectedIds = []) {
+      els.bookPrerequisites.innerHTML = "";
+
+      books
+        .filter(book => book.id !== currentId)
+        .sort((a, b) => a.order - b.order)
+        .forEach(book => {
+          const option = document.createElement("option");
+          option.value = book.id;
+          option.textContent = `${book.title} — ${book.author}`;
+          option.selected = selectedIds.includes(book.id);
+          els.bookPrerequisites.appendChild(option);
+        });
+    }
+
+    function getSelectedPrerequisites() {
+      return [...els.bookPrerequisites.selectedOptions].map(option => option.value);
+    }
+
+    function showFormError(message) {
+      els.formError.textContent = message;
+      els.formError.classList.add("show");
+    }
+
+    function hasPath(startId, targetId, seen = new Set()) {
+      // Used to prevent creating a direct or indirect prerequisite cycle.
+      if (startId === targetId) return true;
+      if (seen.has(startId)) return false;
+      seen.add(startId);
+
+      const start = books.find(book => book.id === startId);
+      if (!start) return false;
+
+      return start.prerequisites.some(parentId => hasPath(parentId, targetId, seen));
+    }
+
+    function wouldCreateCycle(bookId, prerequisiteIds) {
+      // If any proposed prerequisite can already reach the book being edited,
+      // adding the new edge would create a cycle.
+      return prerequisiteIds.some(prereqId => hasPath(prereqId, bookId));
+    }
+
+    function handleBookSubmit(event) {
+      event.preventDefault();
+
+      const title = els.bookTitle.value.trim();
+      const author = els.bookAuthor.value.trim();
+      const subject = els.bookSubject.value.trim();
+      const track = els.bookTrack.value;
+      const phase = els.bookPhase.value.trim();
+      const status = els.bookStatus.value;
+      const prerequisites = getSelectedPrerequisites();
+
+      if (!title || !author || !subject || !phase) {
+        showFormError("Title, author, subject, and phase are required.");
+        return;
+      }
+
+      const duplicate = books.some(book =>
+        book.id !== editingBookId &&
+        book.title.trim().toLowerCase() === title.toLowerCase()
+      );
+
+      if (duplicate) {
+        showFormError("A book with this title already exists.");
+        return;
+      }
+
+      if (editingBookId && wouldCreateCycle(editingBookId, prerequisites)) {
+        showFormError("Those prerequisites would create a dependency cycle. Choose an earlier book instead.");
+        return;
+      }
+
+      if (!editingBookId) {
+        const book = {
+          id: uniqueId(),
+          title,
+          author,
+          track,
+          phase,
+          subject,
+          order: nextOrder(),
+          status,
+          prerequisites,
+          custom: true,
+          note: ""
+        };
+
+        books.push(book);
+      } else {
+        const book = books.find(b => b.id === editingBookId);
+        if (!book) {
+          showFormError("The book could not be found.");
+          return;
+        }
+
+        book.title = title;
+        book.author = author;
+        book.track = track;
+        book.phase = phase;
+        book.subject = subject;
+        book.status = status;
+        book.prerequisites = prerequisites;
+      }
+
+      saveState();
+      refreshPhaseFilters();
+      renderBooks();
+      renderTree();
+      closeModal();
+    }
+
+    function deleteBook(id) {
+      const book = books.find(b => b.id === id);
+      if (!book) return;
+
+      const dependentBooks = books.filter(other => other.prerequisites.includes(id));
+      const dependentText = dependentBooks.length
+        ? ` ${dependentBooks.length} other book${dependentBooks.length === 1 ? "" : "s"} currently depend on it; their prerequisite link${dependentBooks.length === 1 ? "" : "s"} will be removed.`
+        : "";
+
+      const confirmed = window.confirm(`Delete "${book.title}"?${dependentText}`);
+      if (!confirmed) return;
+
+      books = books
+        .filter(other => other.id !== id)
+        .map(other => ({
+          ...other,
+          prerequisites: other.prerequisites.filter(prereqId => prereqId !== id)
+        }));
+
+      if (focusedBookId === id) focusedBookId = null;
+
+      saveState();
+      refreshPhaseFilters();
+      renderBooks();
+      renderTree();
+    }
+
+    /* ------------------ TREE VISUALIZATION ------------------ */
+
+    function buildTreeData() {
+      const groups = new Map();
+
+      books
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .forEach(book => {
+          if (!groups.has(book.subject)) groups.set(book.subject, []);
+          groups.get(book.subject).push(book);
+        });
+
+      const children = [...groups.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([subject, subjectBooks]) => ({
+          type: "subject",
+          id: `subject:${subject}`,
+          name: subject,
+          children: subjectBooks.map(book => ({
+            type: "book",
+            id: book.id,
+            book
+          }))
+        }));
+
+      return {
+        type: "root",
+        id: "root",
+        name: "Mathematics for Quantum & Competition",
+        children
+      };
+    }
+
+    function renderTree() {
+      const wrap = document.getElementById("treeWrap");
+      const svgElement = document.getElementById("treeSvg");
+      const width = Math.max(700, wrap.clientWidth);
+      const bookCount = books.length;
+      const height = Math.max(540, 180 + Math.max(1, bookCount) * 42);
+
+      svgElement.style.height = `${Math.min(Math.max(height, 540), 1150)}px`;
+      svgElement.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+      treeSvg = d3.select(svgElement);
+      treeSvg.selectAll("*").remove();
+
+      treeViewport = treeSvg.append("g");
+
+      const defs = treeSvg.append("defs");
+
+      const arrow = defs.append("marker")
+        .attr("id", "prereqArrow")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 9)
+        .attr("refY", 0)
+        .attr("markerWidth", 7)
+        .attr("markerHeight", 7)
+        .attr("orient", "auto")
+        .attr("markerUnits", "strokeWidth");
+
+      arrow.append("path")
+        .attr("d", "M0,-5L10,0L0,5Z")
+        .attr("fill", "#f8d46b");
+
+      treeZoom = d3.zoom()
+        .scaleExtent([0.45, 2.8])
+        .on("zoom", event => {
+          treeZoomTransform = event.transform;
+          treeViewport.attr("transform", event.transform);
+        });
+
+      treeSvg.call(treeZoom);
+
+      const root = d3.hierarchy(buildTreeData());
+      const tree = d3.tree()
+        .nodeSize([42, 200])
+        .separation((a, b) => a.parent === b.parent ? 1 : 1.25);
+
+      tree(root);
+
+      const nodes = root.descendants();
+      const links = root.links();
+
+      const minX = d3.min(nodes, d => d.x) ?? 0;
+      const maxX = d3.max(nodes, d => d.x) ?? 0;
+      const treeHeight = maxX - minX;
+
+      // Center vertically, with room for the tree's horizontal layers.
+      const yOffset = Math.max(100, (height - treeHeight) / 2 - minX);
+
+      const treeG = treeViewport.append("g")
+        .attr("transform", `translate(70, ${yOffset})`);
+
+      const hierarchyLinks = treeG.append("g")
+        .selectAll("path")
+        .data(links)
+        .join("path")
+        .attr("class", "tree-link")
+        .attr("d", d => curvedTreePath(d));
+
+      const nodeLayer = treeG.append("g");
+
+      const nodeGroups = nodeLayer.selectAll("g")
+        .data(nodes)
+        .join("g")
+        .attr("class", d => `tree-node ${d.data.type}`)
+        .attr("transform", d => `translate(${d.y},${d.x})`)
+        .on("mouseenter", (event, d) => {
+          if (d.data.type === "book") {
+            showTooltip(event, d.data.book);
+            highlightPrerequisites(d.data.book.id, true);
+          }
+        })
+        .on("mousemove", (event, d) => {
+          if (d.data.type === "book") moveTooltip(event);
+        })
+        .on("mouseleave", (event, d) => {
+          hideTooltip();
+          if (d.data.type === "book") highlightPrerequisites(d.data.book.id, false);
+        })
+        .on("click", (event, d) => {
+          if (d.data.type === "book") focusBook(d.data.book.id);
+        });
+
+      nodeGroups.each(function(d) {
+        const g = d3.select(this);
+
+        if (d.data.type === "root") {
+          g.append("circle")
+            .attr("r", 18)
+            .attr("fill", "#eef3f8")
+            .attr("fill-opacity", .92);
+
+          g.append("text")
+            .attr("class", "tree-root-label")
+            .attr("x", 26)
+            .attr("y", 4)
+            .text(d.data.name);
+
+          return;
+        }
+
+        if (d.data.type === "subject") {
+          g.append("circle")
+            .attr("r", 8.5)
+            .attr("fill", "#c9d2dc")
+            .attr("fill-opacity", .88);
+
+          g.append("text")
+            .attr("class", "tree-subject-label")
+            .attr("x", 16)
+            .attr("y", 4)
+            .text(d.data.name);
+
+          return;
+        }
+
+        const book = d.data.book;
+
+        g.append("circle")
+          .attr("class", "book")
+          .attr("r", 10.5)
+          .attr("fill", trackColor(book.track))
+          .attr("fill-opacity", .92);
+
+        g.append("circle")
+          .attr("class", "status-ring")
+          .attr("r", 15.5)
+          .attr("stroke", statusStroke(book.status))
+          .attr("stroke-opacity", .95);
+
+        if (book.status === "Completed") {
+          g.append("text")
+            .attr("class", "status-check")
+            .attr("x", -4)
+            .attr("y", 4)
+            .text("✓");
+        }
+
+        const label = book.title.length > 34 ? `${book.title.slice(0, 31)}…` : book.title;
+
+        g.append("text")
+          .attr("class", "tree-label")
+          .attr("x", 20)
+          .attr("y", 4)
+          .text(label);
+      });
+
+      // Prerequisite dependency layer is drawn after hierarchy nodes, so dependency
+      // arrows visually sit on top of the subject hierarchy.
+      const bookPositions = new Map(
+        nodes
+          .filter(n => n.data.type === "book")
+          .map(n => [n.data.book.id, { x: n.x, y: n.y }])
+      );
+
+      const dependencyEdges = [];
+
+      books.forEach(book => {
+        book.prerequisites.forEach(prereqId => {
+          const source = bookPositions.get(prereqId);
+          const target = bookPositions.get(book.id);
+          if (source && target) {
+            dependencyEdges.push({
+              sourceId: prereqId,
+              targetId: book.id,
+              source,
+              target
+            });
+          }
+        });
+      });
+
+      const prereqLayer = treeG.append("g").attr("class", "prereq-layer");
+
+      prereqLayer.selectAll("path")
+        .data(dependencyEdges)
+        .join("path")
+        .attr("class", "prereq-link")
+        .attr("data-source", d => d.sourceId)
+        .attr("data-target", d => d.targetId)
+        .attr("marker-end", "url(#prereqArrow)")
+        .attr("d", d => prerequisitePath(d.source, d.target));
+
+      // Re-render hierarchy nodes visually above prerequisite paths.
+      nodeLayer.raise();
+
+      // Gently animate the newly rendered tree in.
+      treeG
+        .attr("opacity", 0)
+        .transition()
+        .duration(350)
+        .attr("opacity", 1);
+
+      applyCurrentZoom();
+      updateTreeFocusStyles();
+
+      // Repositioning after a resize is best handled by a fresh fit.
+      fitTreeToViewport(width, height);
+    }
+
+    function curvedTreePath(link) {
+      const sx = link.source.y;
+      const sy = link.source.x;
+      const tx = link.target.y;
+      const ty = link.target.x;
+      const mid = (sx + tx) / 2;
+      return `M${sx},${sy}C${mid},${sy} ${mid},${ty} ${tx},${ty}`;
+    }
+
+    function prerequisitePath(source, target) {
+      // Arrows point from prerequisite (source) to dependent book (target).
+      // A gentle loop gives enough separation even when source and target share a row.
+      const x1 = source.y;
+      const y1 = source.x;
+      const x2 = target.y;
+      const y2 = target.x;
+
+      const dx = Math.max(70, Math.abs(x2 - x1) * 0.45);
+      const direction = x2 >= x1 ? 1 : -1;
+      const c1x = x1 + dx * direction;
+      const c2x = x2 - dx * direction;
+
+      return `M${x1},${y1} C${c1x},${y1} ${c2x},${y2} ${x2},${y2}`;
+    }
+
+    function updateTreeFocusStyles() {
+      if (!treeViewport) return;
+
+      treeViewport.selectAll(".tree-node")
+        .classed("focused", d => d.data.type === "book" && focusedBookId === d.data.book.id)
+        .classed("dimmed", d => focusedBookId && d.data.type === "book" && focusedBookId !== d.data.book.id);
+
+      treeViewport.selectAll(".prereq-link")
+        .classed("highlight", d => focusedBookId && (d.sourceId === focusedBookId || d.targetId === focusedBookId))
+        .style("opacity", d => focusedBookId ? ((d.sourceId === focusedBookId || d.targetId === focusedBookId) ? 1 : .10) : null);
+    }
+
+    function highlightPrerequisites(bookId, enabled) {
+      if (!treeViewport || focusedBookId) return;
+
+      treeViewport.selectAll(".prereq-link")
+        .classed("highlight", d => enabled && (d.sourceId === bookId || d.targetId === bookId))
+        .style("opacity", d => enabled
+          ? ((d.sourceId === bookId || d.targetId === bookId) ? 1 : .18)
+          : .78
+        );
+    }
+
+    function showTooltip(event, book) {
+      els.tooltip.innerHTML = `
+        <strong>${escapeHtml(book.title)}</strong><br>
+        <span style="color:#93a1b2">${escapeHtml(book.author)}</span><br>
+        <span style="color:${trackColor(book.track)}">${escapeHtml(book.track)}</span>
+        · ${escapeHtml(book.status)}
+      `;
+      els.tooltip.style.opacity = "1";
+      moveTooltip(event);
+    }
+
+    function moveTooltip(event) {
+      els.tooltip.style.left = `${event.clientX + 14}px`;
+      els.tooltip.style.top = `${event.clientY + 14}px`;
+    }
+
+    function hideTooltip() {
+      els.tooltip.style.opacity = "0";
+    }
+
+    function applyCurrentZoom() {
+      if (treeSvg && treeZoom) treeSvg.call(treeZoom.transform, treeZoomTransform);
+    }
+
+    function fitTreeToViewport(width, height) {
+      if (!treeSvg || !treeZoom || !treeViewport) return;
+
+      // After drawing with a fresh hierarchy, use a sensible default transform.
+      treeZoomTransform = d3.zoomIdentity.translate(40, 0).scale(Math.min(1, width / 1100));
+      treeSvg.call(treeZoom.transform, treeZoomTransform);
+    }
+
+    function zoomBy(factor) {
+      treeSvg.transition().duration(220).call(treeZoom.scaleBy, factor);
+    }
+
+    function resetZoom() {
+      treeZoomTransform = d3.zoomIdentity;
+      fitTreeToViewport(document.getElementById("treeWrap").clientWidth, document.getElementById("treeSvg").clientHeight);
+    }
+
+    // ------------------ EVENTS ------------------
+
+    document.getElementById("addBookBtn").addEventListener("click", () => openModal("add"));
+    document.getElementById("importBooksBtn").addEventListener("click", openImportModal);
+    document.getElementById("exportDataBtn").addEventListener("click", exportData);
+
+    els.closeImportModalBtn.addEventListener("click", closeImportModal);
+    els.cancelImportBtn.addEventListener("click", closeImportModal);
+
+    els.importModalBackdrop.addEventListener("click", event => {
+      if (event.target === els.importModalBackdrop) closeImportModal();
+    });
+
+    els.importForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      try {
+        importBookList(els.importText.value, els.importMode.value);
+      } catch (error) {
+        els.importError.textContent = error.message || "Could not import the list.";
+        els.importError.classList.add("show");
+      }
+    });
+
+    els.closeModalBtn.addEventListener("click", closeModal);
+    els.cancelModalBtn.addEventListener("click", closeModal);
+
+    els.modalBackdrop.addEventListener("click", event => {
+      if (event.target === els.modalBackdrop) closeModal();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+
+      if (els.modalBackdrop.classList.contains("open")) {
+        closeModal();
+      } else if (els.importModalBackdrop.classList.contains("open")) {
+        closeImportModal();
+      }
+    });
+
+    els.bookForm.addEventListener("submit", handleBookSubmit);
+
+    els.clearFocusBtn.addEventListener("click", clearFocus);
+
+    els.searchInput.addEventListener("input", event => {
+      searchTerm = event.target.value;
+      focusedBookId = null;
+      renderBooks();
+      updateTreeFocusStyles();
+    });
+
+    els.sortSelect.addEventListener("change", event => {
+      sortMode = event.target.value;
+      renderBooks();
+    });
+
+    els.resetBtn.addEventListener("click", resetFilters);
+
+    document.getElementById("zoomInBtn").addEventListener("click", () => zoomBy(1.28));
+    document.getElementById("zoomOutBtn").addEventListener("click", () => zoomBy(.78));
+    document.getElementById("zoomResetBtn").addEventListener("click", resetZoom);
+
+    window.addEventListener("resize", () => {
+      clearTimeout(window.__treeResizeTimer);
+      window.__treeResizeTimer = setTimeout(renderTree, 140);
+    });
+
+    // ------------------ INITIALIZATION ------------------
+
+    loadState();
+    normalizeOrderValues();
+    saveState();
+    selectedPhases = new Set([...new Set(books.map(book => book.phase))]);
+    refreshPhaseFilters();
+    renderBooks();
+    requestAnimationFrame(renderTree);
+  </script>
+</body>
+</html>
